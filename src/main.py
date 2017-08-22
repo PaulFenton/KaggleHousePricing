@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+from categoricalPreProcessing import categoryPreProcess
 from pandas.core.frame import DataFrame
 from pandas.core.series import Series
 from sklearn.preprocessing.data import StandardScaler
@@ -9,8 +10,24 @@ from numpy import float32
 from sklearn.ensemble.gradient_boosting import GradientBoostingRegressor
 
 # load the data
-test_dataset=pd.read_csv('../competition/test.csv')
-train_dataset=pd.read_csv('../competition/train.csv')
+#test=pd.read_csv('C:/Users/paul/Desktop/Kaggle/KaggleHousePricingNew/competition/test.csv')
+#train=pd.read_csv('C:/Users/paul/Desktop/Kaggle/KaggleHousePricingNew/competition/train.csv')
+train=pd.read_csv('../competition/test.csv')
+test=pd.read_csv('../competition/train.csv')
+
+# save and drop the id's
+train_ID = train['Id']
+test_ID = test['Id']
+train.drop("Id", axis=1, inplace=True)
+test.drop("Id", axis=1, inplace=True)
+
+categorical_ids = train.select_dtypes(include=['object'])
+
+# determine the top N most influential features
+
+# subset the training data based on feature importance (drop features not in top N)
+
+
 
 # designate the dataset subsets
 X_train=train_dataset.iloc[:,1:-1].values
