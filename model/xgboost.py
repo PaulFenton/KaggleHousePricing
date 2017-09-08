@@ -23,9 +23,9 @@ class xgboost_model:
   def build(self, train):
     # build the model
     #label_df = pd.DataFrame(index = train.index, columns=['SalePrice'])
-    self.regr.fit(train, train['SalePrice'])
+    self.regr.fit(train.drop(['SalePrice'], axis=1), train['SalePrice'])
     # print out some stats based on model prediction of the training data
-    train_pred = self.regr.predict(train)
+    train_pred = self.regr.predict(train.drop(['SalePrice'], axis=1))
     print("xgboost score in training set: ", np.sqrt(mean_squared_error(train['SalePrice'], train_pred)))
 
     return

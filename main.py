@@ -55,7 +55,7 @@ model = model.xgboost.xgboost_model()
 model.build(train_transformed)
 print("combi has " + str(combi.columns.size) + " columns")
 # make test predictions
-test_transformed['SalePrice'] = model.predict(test_transformed)
+test_transformed['SalePrice'] = model.predict(test_transformed.drop(['SalePrice'], axis=1))
 
 # descale / denormalize
 #descaled = scaler.get_denormalized(predictions)
@@ -63,6 +63,9 @@ test_transformed['SalePrice'] = model.predict(test_transformed)
 # inverse log transform
 train_final = skew.get_skewed(train_transformed)
 test_final = skew.get_skewed(test_transformed)
+
+#train_final = train_transformed
+#test_final = test_transformed
 
 # plot the predictions if requested
 if PLOT_PREDICTIONS:
@@ -72,4 +75,4 @@ if PLOT_PREDICTIONS:
     plt.show()
 
 # output results
-test_final.to_csv('./submissions/predictions.csv', columns=['Id', 'SalePrice'])
+test_final.to_csv('./submissions/predictions.csv', columns=['Id', 'SalePrice'], index=False)
