@@ -1,5 +1,5 @@
 def fill(data):
-  nullcount = data.drop(['SalePrice'], axis=1).isnull().sum().sum()
+  nullcount = data.isnull().sum().sum()
   print("Data has " + str(nullcount) + " missing values. Attempting to fill them in...")
   cleanData = data
   # fill in missing categorical data for each column
@@ -73,10 +73,10 @@ def fill(data):
   # Utilities: fill in the 2 cases of missing Utilities with the mode, "AllPub"
   cleanData["Utilities"] = data["Utilities"].fillna("AllPub")
 
-  nullcount = cleanData.drop(['SalePrice'], axis=1).isnull().sum().sum()
+  nullcount = cleanData.isnull().sum().sum()
   print("After filling in missing values, there are " + str(nullcount) + " missing values remaining.")
   if nullcount > 0:
     print("The null values are:")
-    nullseries = cleanData.drop(['SalePrice'], axis=1).isnull().sum()
+    nullseries = cleanData.isnull().sum()
     print(str(nullseries[nullseries > 0]))
   return cleanData

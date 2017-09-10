@@ -1,78 +1,51 @@
+from sklearn.model_selection import train_test_split
+import preprocess.prepare_housing_data as pre
+import model_factory.xgboost
 import pandas as pd
-import preprocess.fill_missing_data
-import preprocess.remap_categories
-import preprocess.skew
-import preprocess.one_hot_encoding
-import preprocess.normalize
-import preprocess.drop_unimportant
-import model.xgboost
-import explore.plot_histograms
+from sklearn.metrics import mean_squared_error
 
-import math
-import seaborn as sns
-import matplotlib.pyplot as plt
 
-PLOT_SKEW = False
-PLOT_PREDICTIONS = True
+housing = pre.housing_data()
+x_train, x_test, y_train = housing.get_preprocessed_data()
 
-#train = pd.read_csv("C:/Users/paul/Desktop/Kaggle/KaggleHousePricingNew/competition/train.csv");
-#test = pd.read_csv("C:/Users/paul/Desktop/Kaggle/KaggleHousePricingNew/competition/train.csv");
-train = pd.read_csv("./competition/train.csv")
-test = pd.read_csv("./competition/test.csv")
-combi = pd.concat([train, test])
+print(str(type(x_train)) + str(type(x_test)) + str(type(y_train)))
 
-# remove missing values for each
+#scoring
 
-combi = preprocess.fill_missing_data.fill(combi)
-print("combi has " + str(combi.columns.size) + " columns")
-# convert incorrectly typed categorical variables
-combi = preprocess.remap_categories.remap(combi)
-combi = preprocess.drop_unimportant.simple(combi)
-print("combi has " + str(combi.columns.size) + " columns")
+# for n in range(1, 10):
+#     scores = []
+#     for i in range(0, 100):
+#         #subset the training data for this iteration's training and testing
+#         sub_x_train, sub_x_test, sub_y_train, sub_y_test = train_test_split(x_train, y_train, test_size=0.3)
+#
+#         #train the model
+#         model = model_factory.xgboost.xgboost_model(n)
+#         model.build(sub_x_train, sub_y_train)
+#
+#         #evaluate the model
+#         predictions = model.predict(sub_x_test)
+#
+#         #score the model and save the result
+#         err = mean_squared_error(sub_y_test, predictions)
+#         scores.append(err)
+#
+#     print("Scores: " + str(scores))
+#     # calculate the average score
+#     print("The average score for n=" + str(n) + " was: " + str(sum(scores)/len(scores)))
 
-# log transform the numerical features (and salesprice)
-if PLOT_SKEW:
-    explore.plot_histograms.plot(combi[combi['SalePrice'].notnull()].select_dtypes(include=['int64', 'float64']))
-print("combi has " + str(combi.columns.size) + " columns")
-skew = preprocess.skew.Skew()
-combi = skew.get_deskewed(combi)
-print("combi has " + str(combi.columns.size) + " columns")
-if PLOT_SKEW:
-    explore.plot_histograms.plot(combi[combi['SalePrice'].notnull()].select_dtypes(include=['int64', 'float64']))
 
-print("combi has " + str(combi.columns.size) + " columns")
-# use one-hot encoding for the remaining categorical variables
-combi = preprocess.one_hot_encoding.encode(combi)
-print("combi has " + str(combi.columns.size) + " columns")
-# apply normalization/scaling
-#scaler = preprocess.normalize.Normalize()
-#combi = scaler.get_normalized(combi)
+# build the xgboost model
+model = model_factory.xgboost.xgboost_model(8)
+model.build(x_train, y_train)
 
-# fit model
-train_transformed = combi[combi['SalePrice'].notnull()]
-test_transformed = combi[combi['SalePrice'].isnull()]
-model = model.xgboost.xgboost_model()
-model.build(train_transformed)
-print("combi has " + str(combi.columns.size) + " columns")
-# make test predictions
-test_transformed['SalePrice'] = model.predict(test_transformed.drop(['SalePrice'], axis=1))
+# predict y_test from x_test0
+y_test = pd.Series(model.predict(x_test))
 
-# descale / denormalize
-#descaled = scaler.get_denormalized(predictions)
+# inverse transform of the deskew
+print(str(type(x_train)) + str(type(x_test)) + str(type(y_train)) + str(type(y_test)))
+x_train_final, x_test_final , y_train_final, y_test_final = housing.get_preprocessed_skewed_data(x_train, x_test, y_train, y_test)
 
-# inverse log transform
-train_final = skew.get_skewed(train_transformed)
-test_final = skew.get_skewed(test_transformed)
-
-#train_final = train_transformed
-#test_final = test_transformed
-
-# plot the predictions if requested
-if PLOT_PREDICTIONS:
-    print("coming soon")
-    sns.distplot(train_final['SalePrice'])
-    sns.distplot(test_final['SalePrice'], color='g')
-    plt.show()
-
-# output results
-test_final.to_csv('./submissions/predictions.csv', columns=['Id', 'SalePrice'], index=False)
+# print out the submission dataframe to .csv
+final_df = pd.DataFrame(y_test_final, columns=['SalePrice'])
+output = pd.concat([x_test_final['Id'], final_df], axis=1)
+output.to_csv('./submissions/predictions.csv', columns=['Id', 'SalePrice'], index=False)
