@@ -13,7 +13,6 @@ import model_factory.xgboost
 import explore.plot_histograms
 
 PLOT_SKEW = False
-PLOT_PREDICTIONS = False
 
 class housing_data:
 
@@ -21,7 +20,7 @@ class housing_data:
       self.skew = preprocess.skew.Skew()
       return
 
-    def get_preprocessed_data(self):
+    def get_preprocessed_data(self, PLOT):
 
       # train = pd.read_csv("C:/Users/paul/Desktop/Kaggle/KaggleHousePricingNew/competition/train.csv");
       # test = pd.read_csv("C:/Users/paul/Desktop/Kaggle/KaggleHousePricingNew/competition/train.csv");
@@ -49,13 +48,16 @@ class housing_data:
       x_combi = preprocess.remap_categories.remap(x_combi)
       x_combi = preprocess.drop_unimportant.simple(x_combi)
 
+      # generate new features
+      x_combi = preprocess.generate_new_features.generate(x_combi)
+
       # log transform the numerical features (and salesprice)
-      if PLOT_SKEW:
+      if PLOT & PLOT_SKEW:
         explore.plot_histograms.plot(x_combi.select_dtypes(include=['int64', 'float64']))
 
       x_combi, y_train = self.skew.get_deskewed(x_combi, y_train)
 
-      if PLOT_SKEW:
+      if PLOT & PLOT_SKEW:
         explore.plot_histograms.plot(x_combi.select_dtypes(include=['int64', 'float64']))
 
       # use one-hot encoding for the remaining categorical variables

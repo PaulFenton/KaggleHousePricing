@@ -7,8 +7,8 @@ def xgboost_regressor():
     model = xgb.XGBRegressor(
       colsample_bytree=0.2,
       gamma=0.0,
-      learning_rate=0.02,
-      max_depth=3,
+      learning_rate=0.05,
+      max_depth=8,
       min_child_weight=1.5,
       n_estimators=7200,
       reg_alpha=0.9,
